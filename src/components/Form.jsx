@@ -81,7 +81,9 @@ export default function Form() {
 
     try {
       await fetcher("/orders/addPublic", "POST", body);
-      navigate(`/sukces/${id}`);
+      navigate(`/sukces/${id}`, {
+        state: { products: productsNoTotal, sum: sum },
+      });
     } catch (err) {
       addAlert("error", err);
     }
@@ -130,6 +132,7 @@ export default function Form() {
             formData={formData}
             setProductModal={setProductModal}
             setProducts={setProducts}
+            products={products}
           />
         ) : null}
         <form

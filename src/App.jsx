@@ -11,7 +11,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
-    children: [{ path: ":id", element: <Form /> }],
+    children: [
+      { path: ":id", element: <Form /> },
+      { path: "/", element: <UndefinedPage /> },
+    ],
     errorElement: <ErrorPage />,
   },
   { path: "*", element: <UndefinedPage /> },
@@ -21,19 +24,6 @@ const router = createBrowserRouter([
     element: <SuccessPage />,
   },
 ]);
-
-// const router = createBrowserRouter([
-//   { path: "*", element: <UndefinedPage /> },
-//   {
-//     path: ":id",
-//     element: <Form />,
-//     errorElement: <ErrorPage />,
-//   },
-//   {
-//     path: "/sukces/:id",
-//     element: <SuccessPage />,
-//   },
-// ]);
 
 function App() {
   return (

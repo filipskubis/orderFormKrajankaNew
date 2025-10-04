@@ -1,15 +1,18 @@
 import { X } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import { CirclePlus, CircleMinus } from "lucide-react";
 import fetcher from "../helpers/fetcher";
+import { AlertContext } from "../contexts/AlertContext";
 // import Spinner from './Spinner';
 export default function ProductModal({
   productData,
   formData,
   setProductModal,
+  products,
   setProducts,
 }) {
   const [quantity, setQuantity] = useState(1);
+  const { addAlert } = useContext(AlertContext);
   const modalRef = useRef(null);
   const [currentProduct, setCurrentProduct] = useState("");
   const [prioritizedProducts, setPrioritizedProducts] = useState([]);
@@ -61,18 +64,28 @@ export default function ProductModal({
 
     const name = e.target.querySelector("#productSelect").value;
     if (name === "default") return;
-    const quantity = e.target.querySelector("#quantity").value;
+
+    // Check if product exists in the products list if so terminate call and alert
+    const isProductAlreadyAdded = products.some(
+      (product) => product.name === name
+    );
+    if (isProductAlreadyAdded) {
+      addAlert("error", "Ten produkt został już dodany do zamówienia.");
+      return;
+    }
+
     const product = productData.find((product) => product.name === name);
     const uniqueId = crypto.randomUUID();
     const productObject = {
       name,
       id: uniqueId,
-      quantity: quantity,
+      quantity: e.target.querySelector("#quantity").value,
       price: product.price,
       packagingMethod: product.packagingMethod,
       maxQuantity,
     };
-    setProducts((products) => [...products, productObject]);
+
+    setProducts((prevProducts) => [...prevProducts, productObject]);
     setProductModal(false);
   }
 
@@ -88,7 +101,6 @@ export default function ProductModal({
     }
   }, [productTotals, productData]);
 
-  console.log(productQuantities);
   function handleChange(e) {
     const name = e.target.value;
     if (e.target.value === "default") {
