@@ -91,6 +91,7 @@ export default function Form() {
 
   function handleAdd(id, maxQuantity) {
     const newProducts = products.map((product) => {
+      console.log(typeof product.quantity);
       if (product.id === id && product.quantity + 1 <= maxQuantity) {
         product.quantity++;
       }

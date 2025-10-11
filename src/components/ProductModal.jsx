@@ -79,7 +79,7 @@ export default function ProductModal({
     const productObject = {
       name,
       id: uniqueId,
-      quantity: e.target.querySelector("#quantity").value,
+      quantity: Number(e.target.querySelector("#quantity").value),
       price: product.price,
       packagingMethod: product.packagingMethod,
       maxQuantity,

@@ -1,9 +1,7 @@
 import "../styles/success.css";
-import { Link, useLocation } from "react-router-dom";
-import UndefinedPage from "./UndefinedPage";
+import { useLocation } from "react-router-dom";
 export default function SuccessPage() {
   const { state } = useLocation();
-  console.log("state", state);
   return (
     <div className="bg-white grid place-content-center inset-0 w-screen h-screen">
       <div className="card md:max-w-[400px]!">
@@ -14,7 +12,7 @@ export default function SuccessPage() {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
               <g
                 id="SVGRepo_tracerCarrier"
                 strokeLinecap="round"
