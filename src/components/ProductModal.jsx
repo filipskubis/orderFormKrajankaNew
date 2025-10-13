@@ -174,7 +174,7 @@ export default function ProductModal({
                         ? ` - zostało ${productQuantities[product.name]}${
                             product.packagingMethod === "kg" ? " kg" : ""
                           }`
-                        : ""}
+                        : ` | ${product.price} zł`}
                     </option>
                   ) : (
                     <option
@@ -207,9 +207,7 @@ export default function ProductModal({
                           ? ` - zostało ${productQuantities[product.name]}${
                               product.packagingMethod === "kg" ? " kg" : ""
                             }`
-                          : ""}
-                        {product.packagingMethod === "kg" &&
-                          product.packagingMethod}
+                          : ` | ${product.price} zł`}
                       </option>
                     ) : (
                       <option
@@ -242,9 +240,7 @@ export default function ProductModal({
                           ? ` - zostało ${productQuantities[product.name]}${
                               product.packagingMethod === "kg" ? " kg" : ""
                             }`
-                          : ""}
-                        {product.packagingMethod === "kg" &&
-                          product.packagingMethod}
+                          : ` | ${product.price} zł`}
                       </option>
                     ) : (
                       <option
