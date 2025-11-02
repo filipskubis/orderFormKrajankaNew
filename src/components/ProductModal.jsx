@@ -272,7 +272,8 @@ export default function ProductModal({
                   setQuantity(e.target.value);
                 }}
                 max={productQuantities[currentProduct.name]}
-                step="0.01"
+                step="1"
+                min="1"
                 required
                 className="w-[100px] border-[1px] border-[#CCCCCC] p-1 text-lg"
               />
