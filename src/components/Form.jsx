@@ -57,14 +57,20 @@ export default function Form() {
       .toFixed(2);
 
     let eggCheck = false;
-    products.forEach((p) => {
-      if (p.name.toLowerCase().includes("jaja") && p.quantity >= 60) {
-        eggCheck = true;
-      }
-    });
+    const minValue = formData.minimumOrderValue ?? 80;
+    const minEggs = formData.minimumEggQuantity ?? 0;
 
-    if (sum < 80 && !eggCheck) {
-      addAlert("info", "Minimalna wartość zamówienia to 80zł lub 60 jajek.");
+    if (minEggs > 0) {
+      products.forEach((p) => {
+        if (p.name.toLowerCase().includes("jaja") && p.quantity >= minEggs) {
+          eggCheck = true;
+        }
+      });
+    }
+
+    if (sum < minValue && !eggCheck) {
+      const eggMsg = minEggs > 0 ? ` lub ${minEggs} jajek` : "";
+      addAlert("info", `Minimalna wartość zamówienia to ${minValue}zł${eggMsg}.`);
       return;
     }
     const productsNoTotal = products.map(({ total, ...rest }) => rest);
