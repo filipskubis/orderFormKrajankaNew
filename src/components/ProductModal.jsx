@@ -44,13 +44,20 @@ export default function ProductModal({
 
   useEffect(() => {
     async function getData() {
-      const [prioritizedProductsData, productTotals] = await Promise.all([
-        fetcher("/products/getFavorite"),
-        fetcher(`/products/getProductTotals/${formData.date}`),
-      ]);
-
-      setPrioritizedProducts(prioritizedProductsData);
-      setProductTotals(productTotals);
+      try {
+        const [prioritizedProductsData, productTotals] = await Promise.all([
+          fetcher("/products/getFavorite"),
+          fetcher(`/products/getProductTotals/${formData.date}`),
+        ]);
+        setPrioritizedProducts(prioritizedProductsData);
+        setProductTotals(productTotals);
+      } catch {
+        addAlert(
+          "error",
+          "Nie udało się załadować dostępności produktów. Odśwież stronę.",
+        );
+        setProductModal(false);
+      }
     }
     if (formData) {
       setAvailableProducts(Object.keys(formData.stock));
