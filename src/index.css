@@ -37,6 +37,21 @@ body {
   color: #303c6c;
 }
 
+.privacy-policy-content {
+  max-width: 72ch;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.8;
+}
+
+.privacy-policy-content section + section { margin-top: 2.6rem; }
+.privacy-policy-content h2 { margin-bottom: 0.85rem; font-size: 1.35rem; line-height: 1.35; font-weight: 750; }
+.privacy-policy-content p + p { margin-top: 1rem; }
+.privacy-policy-content ul { margin: 0.85rem 0 0; padding-left: 1.35rem; }
+.privacy-policy-content li + li { margin-top: 0.45rem; }
+.privacy-policy-content a { color: #303c6c; font-weight: 750; text-decoration: underline; text-decoration-color: #f28a72; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.privacy-policy-content a:hover { color: #f28a72; }
+
 /*
   1. Use a more-intuitive box-sizing model.
 */
