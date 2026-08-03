@@ -10,7 +10,7 @@ import Big from "big.js";
 import Spinner from "./Spinner.jsx";
 import HoldButton from "./HoldButton.jsx";
 import { AlertContext } from "../contexts/AlertContext.jsx";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 Big.DP = 2;
 Big.RM = Big.roundHalfUp;
 
@@ -18,10 +18,9 @@ export default function Form() {
   const { id } = useParams();
   const { data: formData, isLoading } = useSWR(
     id ? `/forms/get/${id}` : null,
-    fetcher
+    fetcher,
   );
   const { data: productData } = useSWR("/products/get", fetcher);
-
   const [products, setProducts] = useState([]);
   const [productModal, setProductModal] = useState(false);
   const [payment, setPayment] = useState("Za pobraniem");
@@ -52,7 +51,7 @@ export default function Form() {
     const sum = products
       .reduce(
         (acc, product) => acc.plus(Big(product.quantity).times(product.price)),
-        Big(0)
+        Big(0),
       )
       .toFixed(2);
 
@@ -70,7 +69,10 @@ export default function Form() {
 
     if (sum < minValue && !eggCheck) {
       const eggMsg = minEggs > 0 ? ` lub ${minEggs} jajek` : "";
-      addAlert("info", `Minimalna wartość zamówienia to ${minValue}zł${eggMsg}.`);
+      addAlert(
+        "info",
+        `Minimalna wartość zamówienia to ${minValue}zł${eggMsg}.`,
+      );
       return;
     }
     const productsNoTotal = products.map(({ total, ...rest }) => rest);
@@ -184,7 +186,7 @@ export default function Form() {
             {products.map(
               (
                 { id, name, price, quantity, packagingMethod, maxQuantity },
-                index
+                index,
               ) => (
                 <div
                   key={id}
@@ -217,7 +219,7 @@ export default function Form() {
                   </div>
                   <p>{`${String(Big(quantity).times(price))} zł`}</p>
                 </div>
-              )
+              ),
             )}
 
             {products.length > 0 ? (
@@ -230,11 +232,11 @@ export default function Form() {
                         .reduce(
                           (acc, product) =>
                             acc.plus(
-                              Big(product.quantity).times(product.price)
+                              Big(product.quantity).times(product.price),
                             ),
-                          Big(0)
+                          Big(0),
                         )
-                        .toFixed(2) // Round the final result to 2 decimal places
+                        .toFixed(2), // Round the final result to 2 decimal places
                     )}{" "}
                     zł
                   </p>
@@ -303,6 +305,16 @@ export default function Form() {
           >
             Złóż zamówienie
           </button>
+          <p className="-mt-5 text-center text-sm leading-5 text-[#303c6c]/80 md:text-base">
+            Składając zamówienie, zapoznałeś/zapoznałaś się z{" "}
+            <Link
+              to="/polityka-prywatnosci"
+              className="font-bold text-[#303c6c] underline decoration-[#f28a72] decoration-2 underline-offset-4 hover:text-[#f28a72] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f28a72] focus-visible:ring-offset-2"
+            >
+              Polityką prywatności
+            </Link>
+            .
+          </p>
         </form>
       </>
     );

@@ -7,7 +7,9 @@ import UndefinedPage from "./components/UndefinedPage.jsx";
 import ErrorPage from "./components/ErrorPage.jsx";
 import Layout from "./components/Layout.jsx";
 import Expired from "./components/Expired.jsx";
+import PrivacyPolicy from "./components/PrivacyPolicy.jsx";
 const router = createBrowserRouter([
+  { path: "/polityka-prywatnosci", element: <PrivacyPolicy /> },
   {
     path: "/",
     element: <Layout />,
