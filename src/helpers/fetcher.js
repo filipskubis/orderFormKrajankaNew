@@ -1,25 +1,27 @@
-// https://api-krajanka.up.railway.app${ENDPOINT}
-// http://localhost:3000${ENDPOINT}
+// http://localhost:3000
+// https://api-krajanka.up.railway.app
 
-export default async function fetcher(ENDPOINT, method = "GET", body = null) {
-  const response = await fetch(
-    `https://api-krajanka.up.railway.app${ENDPOINT}`,
-    {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: body ? JSON.stringify(body) : null,
-      credentials: "include",
-    }
-  );
-  const data = await response.json();
+const API_URL = "http://localhost:3000";
 
-  if (!data.ok) throw data.message;
-
-  if (data.result) {
-    return data.result;
-  } else {
-    return data.message;
+export default async function fetcher(endpoint, method = "GET", body = null) {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : null,
+    credentials: "include",
+  });
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    data = { ok: false, message: "Serwer zwrócił nieprawidłową odpowiedź." };
   }
+  if (!response.ok || !data.ok) {
+    const error = new Error(data.message || "Nie udało się wykonać żądania.");
+    error.status = response.status;
+    error.code = data.code;
+    error.result = data.result;
+    throw error;
+  }
+  return data.result ?? data.message;
 }
