@@ -1,7 +1,7 @@
 // http://localhost:3000
 // https://api-krajanka.up.railway.app
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://api-krajanka.up.railway.app";
 
 export default async function fetcher(endpoint, method = "GET", body = null) {
   const response = await fetch(`${API_URL}${endpoint}`, {
