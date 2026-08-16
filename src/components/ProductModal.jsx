@@ -103,10 +103,10 @@ export default function ProductModal({ formData, products, setProductModal, setP
         <div className="flex flex-col gap-2 items-center">
           <label htmlFor="quantity" className="text-lg md:text-xl">Ilość: ({selectedProduct.packagingMethod})</label>
           <div className="flex gap-2">
-            <input id="quantity" type="number" value={quantity} min="1" max={selectedProduct.remainingQuantity} step="1" onChange={(event) => setQuantity(Number(event.target.value))} className="w-[100px] border-[1px] border-[#CCCCCC] p-1 text-lg" />
+            <input id="quantity" type="number" value={quantity} min="0.5" max={selectedProduct.remainingQuantity} step="0.5" onChange={(event) => setQuantity(Number(event.target.value))} className="w-[100px] border-[1px] border-[#CCCCCC] p-1 text-lg" />
             <div className="flex gap-2">
-              <button type="button" onClick={() => setQuantity((current) => Math.min(selectedProduct.remainingQuantity, current + 1))}><CirclePlus className="w-[2rem] h-auto" /></button>
-              <button type="button" onClick={() => setQuantity((current) => Math.max(1, current - 1))}><CircleMinus className="w-[2rem] h-auto" /></button>
+              <button type="button" onClick={() => setQuantity((current) => Math.min(selectedProduct.remainingQuantity, current + 0.5))}><CirclePlus className="w-[2rem] h-auto" /></button>
+              <button type="button" onClick={() => setQuantity((current) => Math.max(0.5, current - 0.5))}><CircleMinus className="w-[2rem] h-auto" /></button>
             </div>
           </div>
         </div>
