@@ -9,6 +9,7 @@ import Expired from "./Expired.jsx";
 import Spinner from "./Spinner.jsx";
 import fetcher from "../helpers/fetcher.js";
 import { AlertContext } from "../contexts/AlertContext.jsx";
+import { getQuantityStep, isValidQuantity } from "../helpers/quantityStep.js";
 
 export default function Form() {
   const { id } = useParams();
@@ -50,7 +51,33 @@ export default function Form() {
     {productModal && <ProductModal formData={formData} products={products} setProducts={setProducts} setProductModal={setProductModal} />}
     <form className="w-full h-full xl:h-fit bg-white xl:shadow-xl p-4 rounded-lg flex flex-col gap-8 pb-12 md:text-[2.5vh] md:justify-between xl:text-xl" onSubmit={handleFormSubmit}>
       <div className="relative flex flex-col gap-1 before:absolute before:content-[''] before:w-full before:h-[2px] before:bg-[#CCCCCC] before:-bottom-4"><p className="text-3xl md:text-[48px] xl:text-[36px]">Złóż zamówienie</p><p className="text-xl opacity-[0.8] md:text-2xl">{formData.city} {formData.date}</p></div>
-      <div className="relative flex flex-col gap-2 w-full before:absolute before:content-[''] before:w-full before:h-[2px] before:bg-[#CCCCCC] before:-bottom-4"><p>Produkty:</p><button type="button" onClick={() => setProductModal(true)} className="flex ml-1 gap-2 w-fit items-center"><CirclePlus color="#f28a72" /><p className="text-coral md:text-[2.5vh] xl:text-xl">Dodaj Produkt</p></button>{products.length > 0 && <><div className="gap-4 p-1 grid grid-cols-[1.5fr_1fr_1fr_1fr] text-left"><p>Nazwa:</p><p>Cena:</p><p>Ilość:</p><p>Razem:</p></div>{products.map((product, index) => <div key={product.id} className="relative border-[1px] rounded-md p-1 gap-4 grid grid-cols-[1.5fr_1fr_1fr_1fr] items-start text-start"><p className="break-words">{index + 1}. {product.name}{product.weight ? <span className="block text-sm">{product.weight} kg</span> : null}</p><p>{product.price >= 1 ? `${product.price} zł` : `${product.price * 100} gr`}</p>{product.selectionMode === "weighted-items" ? <div className="flex flex-col gap-2 items-start"><span>1 szt.</span><button type="button" aria-label={`Usuń ${product.name}`} onClick={() => removeProduct(product.id)}><Trash2 /></button></div> : <div className="flex flex-col gap-2 items-start"><span>{product.quantity} ({product.packagingMethod})</span><div className="flex gap-2"><button type="button" onClick={() => changeQuantity(product.id, 0.5)}><CirclePlus /></button><button type="button" onClick={() => changeQuantity(product.id, -0.5)}><CircleMinus /></button></div></div>}<p>{String(product.lineTotal || Big(product.quantity).times(product.price))} zł</p></div>)}<div className="gap-4 p-1 flex w-full justify-end"><p className="border-[2px] border-slate p-1 rounded-md flex gap-2"><span>Suma:</span><span>{sum} zł</span></p></div></>}</div>
+      <div className="relative flex flex-col gap-2 w-full before:absolute before:content-[''] before:w-full before:h-[2px] before:bg-[#CCCCCC] before:-bottom-4">
+        <p>Produkty:</p>
+        <button type="button" onClick={() => setProductModal(true)} className="flex gap-2 w-fit items-center" style={{ margin: "0.5rem 0" }}><CirclePlus color="#f28a72" /><p className="text-coral md:text-[2.5vh] xl:text-xl">Dodaj Produkt</p></button>
+        {products.length > 0 && <>
+          {products.map((product, index) => <div key={product.id} className="flex flex-col gap-3 rounded-md border-[1px] p-3 text-start">
+            <header className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="break-words font-semibold">{index + 1}. {product.name}</p>
+                <p className="text-sm opacity-75">{product.selectionMode === "weighted-items" ? `${product.weight} kg · ${product.price} zł/kg` : product.price >= 1 ? `${product.price} zł` : `${product.price * 100} gr`}</p>
+              </div>
+              <button type="button" aria-label={`Usuń ${product.name} z zamówienia`} className="grid h-9 w-9 shrink-0 place-items-center rounded text-slate hover:bg-[#A1221E]/10 focus-visible:ring-2 focus-visible:ring-coral" onClick={() => removeProduct(product.id)}><Trash2 aria-hidden="true" /></button>
+            </header>
+            <div className="flex w-full items-end justify-between gap-4">
+              {product.selectionMode === "weighted-items" ? <p>Ilość: 1 szt.</p> : <div className="flex flex-col items-start gap-2">
+                <p>Ilość: ({product.packagingMethod})</p>
+                <div className="flex items-center gap-2">
+                  <input type="number" min={getQuantityStep(product.packagingMethod)} step={getQuantityStep(product.packagingMethod)} value={product.quantity} onChange={(event) => { const quantity = Number(event.target.value); if (isValidQuantity(quantity, product.packagingMethod) && quantity <= product.maxQuantity) setProducts((current) => current.map((line) => line.id === product.id ? { ...line, quantity } : line)); }} className="w-[80px] border-[1px] border-[#CCCCCC] p-1 text-lg" />
+                  <button type="button" aria-label={`Zwiększ ilość ${product.name}`} onClick={() => changeQuantity(product.id, getQuantityStep(product.packagingMethod))}><CirclePlus /></button>
+                  <button type="button" aria-label={`Zmniejsz ilość ${product.name}`} onClick={() => changeQuantity(product.id, -getQuantityStep(product.packagingMethod))}><CircleMinus /></button>
+                </div>
+              </div>}
+              <p className="shrink-0">{String(product.lineTotal || Big(product.quantity).times(product.price))} zł</p>
+            </div>
+          </div>)}
+          <div className="gap-4 p-1 flex w-full justify-end"><p className="border-[2px] border-slate p-1 rounded-md flex gap-2"><span>Suma:</span><span>{sum} zł</span></p></div>
+        </>}
+      </div>
       <div className="relative flex flex-col gap-1 before:absolute before:content-[''] before:w-full before:h-[2px] before:bg-[#CCCCCC] before:-bottom-4"><label htmlFor="address">Adres:</label><input type="text" id="address" value={address} onChange={(event) => setAddress(event.target.value)} required className="p-1 rounded-lg focus:outline-none border-[1px] border-[#CCCCCC]" /></div>
       <div className="relative flex flex-col gap-1 before:absolute before:content-[''] before:w-full before:h-[2px] before:bg-[#CCCCCC] before:-bottom-4"><PhoneNumberInput value={phone} change={setPhone} /></div>
       <div className="relative flex flex-col md:text-lg gap-1 before:absolute before:content-[''] before:w-full before:h-[2px] before:bg-[#CCCCCC] before:-bottom-4"><p className="md:text-xl">Płatność:</p><div className="radio-input"><label className="label bg-[#f28a7270] rounded-xl"><input type="radio" checked readOnly name="value-radio" /><p className="text">Gotówką przy odbiorze</p></label></div></div>

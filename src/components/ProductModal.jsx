@@ -2,6 +2,7 @@ import { Check, ChevronRight, CircleMinus, CirclePlus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Big from "big.js";
 import fetcher from "../helpers/fetcher.js";
+import { getQuantityStep, isValidQuantity } from "../helpers/quantityStep.js";
 
 const weight = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2 });
 
@@ -49,7 +50,7 @@ export default function ProductModal({ formData, products, setProductModal, setP
 
   const addQuantity = (event) => {
     event.preventDefault();
-    if (!selectedProduct || selectedProduct.selectionMode === "weighted-items" || products.some((product) => product.formProductId === selectedProduct.id)) return;
+    if (!selectedProduct || selectedProduct.selectionMode === "weighted-items" || !isValidQuantity(Number(quantity), selectedProduct.packagingMethod) || products.some((product) => product.formProductId === selectedProduct.id)) return;
     setProducts((current) => [...current, {
       id: selectedProduct.id,
       formProductId: selectedProduct.id,
@@ -81,6 +82,17 @@ export default function ProductModal({ formData, products, setProductModal, setP
     setProductModal(false);
   };
 
+  const weightedItemGroups = useMemo(() => {
+    if (!weightDialogProduct) return [];
+
+    return Object.values(weightDialogProduct.weightedItems.reduce((groups, item) => {
+      const key = Big(item.weight).toString();
+      if (!groups[key]) groups[key] = { weight: item.weight, items: [] };
+      groups[key].items.push(item);
+      return groups;
+    }, {}));
+  }, [weightDialogProduct]);
+
   return <div className="absolute flex inset-0 justify-center top-[30%] w-screen h-screen md:text-xl">
     <button type="button" aria-label="Zamknij wybór produktów" onClick={() => setProductModal(false)} className="fixed inset-0 z-[9998] bg-black/15 backdrop-blur-md" />
     <form ref={modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="product-modal-title" className="relative z-[9999] flex w-[80vw] self-start flex-col gap-4 rounded-lg border-[1px] border-darkcoral bg-white p-4 pb-[66px] pt-8 shadow-xl outline-none md:w-[60vw] xl:w-[50vw]" onSubmit={addQuantity}>
@@ -103,10 +115,10 @@ export default function ProductModal({ formData, products, setProductModal, setP
         <div className="flex flex-col gap-2 items-center">
           <label htmlFor="quantity" className="text-lg md:text-xl">Ilość: ({selectedProduct.packagingMethod})</label>
           <div className="flex gap-2">
-            <input id="quantity" type="number" value={quantity} min="0.5" max={selectedProduct.remainingQuantity} step="0.5" onChange={(event) => setQuantity(Number(event.target.value))} className="w-[100px] border-[1px] border-[#CCCCCC] p-1 text-lg" />
+            <input id="quantity" type="number" value={quantity} min={getQuantityStep(selectedProduct.packagingMethod)} max={selectedProduct.remainingQuantity} step={getQuantityStep(selectedProduct.packagingMethod)} onChange={(event) => { const nextQuantity = Number(event.target.value); if (isValidQuantity(nextQuantity, selectedProduct.packagingMethod)) setQuantity(nextQuantity); }} className="w-[100px] border-[1px] border-[#CCCCCC] p-1 text-lg" />
             <div className="flex gap-2">
-              <button type="button" onClick={() => setQuantity((current) => Math.min(selectedProduct.remainingQuantity, current + 0.5))}><CirclePlus className="w-[2rem] h-auto" /></button>
-              <button type="button" onClick={() => setQuantity((current) => Math.max(0.5, current - 0.5))}><CircleMinus className="w-[2rem] h-auto" /></button>
+              <button type="button" onClick={() => setQuantity((current) => Math.min(selectedProduct.remainingQuantity, current + getQuantityStep(selectedProduct.packagingMethod)))}><CirclePlus className="w-[2rem] h-auto" /></button>
+              <button type="button" onClick={() => setQuantity((current) => Math.max(getQuantityStep(selectedProduct.packagingMethod), current - getQuantityStep(selectedProduct.packagingMethod)))}><CircleMinus className="w-[2rem] h-auto" /></button>
             </div>
           </div>
         </div>
@@ -130,10 +142,14 @@ export default function ProductModal({ formData, products, setProductModal, setP
       <section role="dialog" aria-modal="true" aria-labelledby="weight-dialog-title" className="relative w-[80vw] max-h-[70vh] overflow-y-auto rounded-lg border border-darkcoral bg-white p-4 shadow-xl md:w-[60vw] xl:w-[50vw]">
         <button type="button" aria-label="Wróć" className="absolute right-2 top-2" onClick={() => setWeightDialogProduct(null)}><X /></button>
         <h2 id="weight-dialog-title" className="mb-4 text-xl">{weightDialogProduct.name}</h2>
-        <p className="mb-4 border-b border-[#CCCCCC] pb-3 text-sm opacity-75">Wybierz konkretną sztukę</p>
-        <ul className="flex flex-col gap-4 pt-2">{weightDialogProduct.weightedItems.map((item) => {
-          const selected = products.some((line) => line.weightedItemId === item.id);
-          return <li key={item.id}><button type="button" disabled={!item.available || selected} onClick={() => addWeighted(weightDialogProduct, item)} className="weight-option"><span className="weight-option__label">{weight.format(item.weight)} kg · {Big(item.totalPrice).toFixed(2)} zł</span><span className={`weight-option__action ${item.available && !selected ? "" : "weight-option__action--muted"}`}>{selected ? <><Check aria-hidden="true" className="h-4 w-4" />Dodano</> : item.available ? <>Wybierz<ChevronRight aria-hidden="true" className="h-4 w-4" /></> : "Wyprzedane"}</span></button></li>;
+        <p className="mb-4 border-b border-[#CCCCCC] pb-3 text-sm opacity-75">Wybierz wagę</p>
+        <ul className="flex flex-col gap-4 pt-2">{weightedItemGroups.map((group) => {
+          const availableItems = group.items.filter((item) => item.available && !products.some((line) => line.weightedItemId === item.id));
+          const allSoldOut = group.items.every((item) => !item.available);
+          const selectedCount = group.items.filter((item) => products.some((line) => line.weightedItemId === item.id)).length;
+          const item = availableItems[0];
+
+          return <li key={Big(group.weight).toString()}><button type="button" disabled={!item} onClick={() => addWeighted(weightDialogProduct, item)} className="weight-option"><span className="weight-option__label">{weight.format(group.weight)} kg · {Big(item?.totalPrice ?? group.items[0].totalPrice).toFixed(2)} zł</span><span className={`weight-option__action ${item ? "" : "weight-option__action--muted"}`}>{item ? <>Wybierz<ChevronRight aria-hidden="true" className="h-4 w-4" /></> : allSoldOut ? "Wyprzedane" : <><Check aria-hidden="true" className="h-4 w-4" />Dodano{selectedCount > 1 ? ` (${selectedCount})` : ""}</>}</span></button></li>;
         })}</ul>
       </section>
     </div>}
